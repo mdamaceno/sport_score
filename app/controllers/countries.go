@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mdmaceno/sport_score/app/sport_score/helpers"
-	"github.com/mdmaceno/sport_score/app/sport_score/models"
+	"github.com/mdmaceno/sport_score/app/helpers"
+	"github.com/mdmaceno/sport_score/app/models"
 	"gorm.io/gorm"
 )
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mdmaceno/sport_score/app/sport_score/controllers"
-	config "github.com/mdmaceno/sport_score/config/sport_score"
+	"github.com/mdmaceno/sport_score/app/controllers"
+	config "github.com/mdmaceno/sport_score/config"
 )
 
 func main() {

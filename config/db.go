@@ -3,7 +3,7 @@ package config
 import (
 	"log"
 
-	"github.com/mdmaceno/sport_score/app/sport_score/models"
+	"github.com/mdmaceno/sport_score/app/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

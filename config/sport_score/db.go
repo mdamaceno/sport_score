@@ -9,7 +9,14 @@ import (
 )
 
 func InitDB() *gorm.DB {
-	url := "host=localhost user=postgres password=postgres dbname=sport_score_development port=5432 sslmode=disable TimeZone=America/Sao_Paulo"
+	host := GetEnvVar("DB_HOST").(string)
+	user := GetEnvVar("DB_USER").(string)
+	password := GetEnvVar("DB_PASS").(string)
+	dbname := GetEnvVar("DB_NAME").(string)
+	port := GetEnvVar("DB_PORT").(string)
+
+	url := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbname + " port=" + port +
+		" sslmode=disable TimeZone=America/Sao_Paulo"
 
 	db, err := gorm.Open(postgres.Open(url), &gorm.Config{})
 

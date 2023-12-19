@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
@@ -24,10 +25,12 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 	}
 
 	uuid := uuid.New()
+	name := json_map["name"].(string)
 
 	country := models.Country{
 		Id:   uuid,
-		Name: json_map["name"].(string),
+		Name: name,
+		Slug: slug.Make(name),
 	}
 
 	if cc.DB.Create(&country).Error != nil {

@@ -1,6 +1,24 @@
-version: '3.7'
+version: '3.9'
 
 services:
+
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: dev
+    ports:
+      - ${APP_PORT:-3000}:1323
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+      POSTGRES_DB: ${DB_NAME}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - .:/opt/app/api
+    depends_on:
+      - redis
+      - postgres
 
   redis:
     image: redis:alpine

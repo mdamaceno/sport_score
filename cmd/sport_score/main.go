@@ -1,16 +1,17 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
+	"github.com/mdmaceno/sport_score/app/sport_score/controllers"
+	config "github.com/mdmaceno/sport_score/config/sport_score"
 )
 
 func main() {
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, world!\n")
-	})
+	DB := config.InitDB()
+	countriesControllers := controllers.CountriesController{DB: DB}
+
+	e.POST("/countries", countriesControllers.CreateCountry)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

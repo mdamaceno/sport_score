@@ -16,7 +16,7 @@ func InitDB() *gorm.DB {
 	port := GetEnvVar("DB_PORT").(string)
 
 	url := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbname + " port=" + port +
-		" sslmode=disable TimeZone=America/Sao_Paulo"
+		" sslmode=disable TimeZone=UTC"
 
 	db, err := gorm.Open(postgres.Open(url), &gorm.Config{})
 

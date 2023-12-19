@@ -40,7 +40,7 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 
 	log.Println("Country created successfully with id: " + uuid.String())
 
-	c.JSON(http.StatusOK, &country)
+	c.JSON(http.StatusCreated, &country)
 
 	return nil
 }

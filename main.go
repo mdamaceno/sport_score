@@ -11,8 +11,8 @@ func main() {
 	DB := config.InitDB()
 	countriesControllers := controllers.CountriesController{DB: DB}
 
-	e.GET("/countries/:id", countriesControllers.FindCountryById)
-	e.POST("/countries", countriesControllers.CreateCountry)
+	e.GET("/countries/:id", countriesControllers.Show)
+	e.POST("/countries", countriesControllers.Create)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

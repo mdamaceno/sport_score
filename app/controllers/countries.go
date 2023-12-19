@@ -18,7 +18,7 @@ type CountriesController struct {
 	DB *gorm.DB
 }
 
-func (cc CountriesController) CreateCountry(c echo.Context) error {
+func (cc CountriesController) Create(c echo.Context) error {
 	json_map, err := helpers.DecodeRawJson(c.Request().Body)
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 	return nil
 }
 
-func (cc CountriesController) FindCountryById(c echo.Context) error {
+func (cc CountriesController) Show(c echo.Context) error {
 	country := models.Country{}
 	id := c.Param("id")
 

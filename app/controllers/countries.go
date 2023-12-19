@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 	json_map, err := helpers.DecodeRawJson(c.Request().Body)
 
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -27,6 +29,7 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 	}
 
 	if cc.DB.Create(&country).Error != nil {
+		fmt.Println(err)
 		return err
 	}
 

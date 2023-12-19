@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
@@ -33,8 +35,13 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 		Slug: slug.Make(name),
 	}
 
-	if cc.DB.Create(&country).Error != nil {
-		log.Fatalln(err)
+	if err := cc.DB.Create(&country).Error; err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			c.JSON(http.StatusConflict, map[string]string{"error": "Country already exists"})
+		}
+
 		return err
 	}
 

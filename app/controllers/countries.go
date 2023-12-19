@@ -15,7 +15,7 @@ type CountriesController struct {
 }
 
 func (cc CountriesController) CreateCountry(c echo.Context) error {
-	json_map, err := helpers.DecodeRawJson(c)
+	json_map, err := helpers.DecodeRawJson(c.Request().Body)
 
 	if err != nil {
 		return err

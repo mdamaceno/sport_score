@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
@@ -21,7 +22,7 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 	}
 
 	country := models.Country{
-		Id:   helpers.GenerateUUID(),
+		Id:   uuid.New(),
 		Name: json_map["name"].(string),
 	}
 

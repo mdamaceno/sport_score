@@ -51,3 +51,14 @@ func (cc CountriesController) CreateCountry(c echo.Context) error {
 
 	return nil
 }
+
+func (cc CountriesController) FindCountryById(c echo.Context) error {
+	country := models.Country{}
+	id := c.Param("id")
+
+	if err := cc.DB.Where("id = ?", id).First(&country).Error; err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Country not found"})
+	}
+
+	return c.JSON(http.StatusOK, &country)
+}

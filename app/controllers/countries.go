@@ -9,7 +9,6 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
-	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
 	"gorm.io/gorm"
 )
@@ -18,31 +17,35 @@ type CountriesController struct {
 	DB *gorm.DB
 }
 
+type CountryParams struct {
+	Name string `json:"name"`
+}
+
 func (cc CountriesController) Create(c echo.Context) error {
-	json_map, err := helpers.DecodeRawJson(c.Request().Body)
+	countryParams := new(CountryParams)
+
+	err := c.Bind(countryParams)
 
 	if err != nil {
-		log.Fatalln(err)
-		return err
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 
 	uuid := uuid.New()
-	name := json_map["name"].(string)
 
 	country := models.Country{
 		Id:   uuid,
-		Name: name,
-		Slug: slug.Make(name),
+		Name: countryParams.Name,
+		Slug: slug.Make(countryParams.Name),
 	}
 
 	if err := cc.DB.Create(&country).Error; err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			c.JSON(http.StatusConflict, map[string]string{"error": "Country already exists"})
+			return c.JSON(http.StatusConflict, map[string]string{"error": "Country already exists"})
 		}
 
-		return err
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
 	}
 
 	log.Println("Country created successfully with id: " + uuid.String())

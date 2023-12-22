@@ -13,6 +13,7 @@ func InitRoutes(e *echo.Echo, DB *gorm.DB) *echo.Echo {
     apiV1.GET("/countries", countriesControllers.Index)
 	apiV1.GET("/countries/:id", countriesControllers.Show)
 	apiV1.POST("/countries", countriesControllers.Create)
+    apiV1.PATCH("/countries/:id", countriesControllers.Update)
 
 	return e
 }

@@ -80,3 +80,38 @@ func (cc CountriesController) Index(c echo.Context) error {
 
     return c.JSON(http.StatusOK, &countries)
 }
+
+func (cc CountriesController) Update(c echo.Context) error {
+    country := models.Country{}
+    id := c.Param("id")
+
+    if err := cc.DB.Where("id = ?", id).First(&country).Error; err != nil {
+        return c.JSON(http.StatusNotFound, map[string]string{"error": "Country not found"})
+    }
+
+	countryParams := new(CountryParams)
+
+	if err := c.Bind(countryParams); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+	}
+
+	if err := validate.Struct(countryParams); err != nil {
+        mapErrors := helpers.MapValidationErrors(err)
+        return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{"errors": mapErrors})
+	}
+
+    country.Name = countryParams.Name
+    country.Slug = slug.Make(countryParams.Name)
+
+    if err := cc.DB.Save(&country).Error; err != nil {
+        var pgErr *pgconn.PgError
+
+        if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+            return c.JSON(http.StatusConflict, map[string]string{"error": "Country already exists"})
+        }
+
+        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
+    }
+
+    return c.JSON(http.StatusOK, &country)
+}

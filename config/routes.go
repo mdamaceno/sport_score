@@ -14,6 +14,7 @@ func InitRoutes(e *echo.Echo, DB *gorm.DB) *echo.Echo {
 	apiV1.GET("/countries/:id", countriesControllers.Show)
 	apiV1.POST("/countries", countriesControllers.Create)
     apiV1.PATCH("/countries/:id", countriesControllers.Update)
+    apiV1.DELETE("/countries/:id", countriesControllers.Delete)
 
 	return e
 }

@@ -113,5 +113,14 @@ func (cc CountriesController) Update(c echo.Context) error {
         return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
     }
 
-    return c.JSON(http.StatusOK, &country)
+    return c.JSON(http.StatusAccepted, &country)
+}
+
+func (cc CountriesController) Delete(c echo.Context) error {
+    country := models.Country{}
+    id := c.Param("id")
+
+    cc.DB.Where("id = ?", id).First(&country).Delete(&country)
+
+    return c.JSON(http.StatusNoContent, nil)
 }

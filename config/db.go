@@ -3,7 +3,7 @@ package config
 import (
 	"log"
 
-	"github.com/mdmaceno/sport_score/app/models"
+	"github.com/mdmaceno/sport_score/db"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -18,13 +18,17 @@ func InitDB() *gorm.DB {
 	url := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbname + " port=" + port +
 		" sslmode=disable TimeZone=UTC"
 
-	db, err := gorm.Open(postgres.Open(url), &gorm.Config{})
+	orm, err := gorm.Open(postgres.Open(url), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&models.Country{})
+    log.Println("Database connection established")
 
-	return db
+    db.RunMigrations(orm)
+
+    log.Println("Database migrations ran successfully")
+
+	return orm
 }

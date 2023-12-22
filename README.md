@@ -1,6 +1,6 @@
 # Sport Score
 
-Sport Score is an API to simulate matches between two football (the real one) teams, compute theis scores and send notification to a user (email, sms, whatever).
+Sport Score is an API to simulate matches between two football (the real one) teams, compute their scores and send notification to a user (email, sms, whatever).
 
 # Requirements
 
@@ -29,7 +29,7 @@ When the application is up, it will be available for requests on `http://localho
 
 The content type for all endpoints is `application/json`.
 
-### Retrive all countries
+### Retrieve all countries
 
 ```
 GET /countries

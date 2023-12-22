@@ -72,3 +72,11 @@ func (cc CountriesController) Show(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, &country)
 }
+
+func (cc CountriesController) Index(c echo.Context) error {
+    countries := []models.Country{}
+
+    cc.DB.Find(&countries)
+
+    return c.JSON(http.StatusOK, &countries)
+}

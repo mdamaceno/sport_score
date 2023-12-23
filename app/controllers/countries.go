@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
@@ -48,10 +47,7 @@ func (cc CountriesController) Create(c echo.Context) error {
 		})
 	}
 
-	uuid := uuid.New()
-
 	country := models.Country{
-		Id:   uuid,
 		Name: countryParams.Name,
 		Slug: slug.Make(countryParams.Name),
 	}
@@ -76,9 +72,11 @@ func (cc CountriesController) Create(c echo.Context) error {
 		})
 	}
 
-	log.Println("Country created successfully with id: " + uuid.String())
+	log.Println("Country created successfully with id: " + country.Id.String())
 
-	return c.JSON(http.StatusCreated, &country)
+	return c.JSON(http.StatusCreated, helpers.SuccessResponse{
+		Data: &country,
+	})
 }
 
 func (cc CountriesController) Show(c echo.Context) error {
@@ -95,7 +93,9 @@ func (cc CountriesController) Show(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, &country)
+	return c.JSON(http.StatusOK, helpers.SuccessResponse{
+		Data: &country,
+	})
 }
 
 func (cc CountriesController) Index(c echo.Context) error {
@@ -103,7 +103,9 @@ func (cc CountriesController) Index(c echo.Context) error {
 
 	cc.DB.Find(&countries)
 
-	return c.JSON(http.StatusOK, &countries)
+	return c.JSON(http.StatusOK, helpers.SuccessResponse{
+		Data: &countries,
+	})
 }
 
 func (cc CountriesController) Update(c echo.Context) error {
@@ -167,7 +169,9 @@ func (cc CountriesController) Update(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusAccepted, &country)
+	return c.JSON(http.StatusAccepted, helpers.SuccessResponse{
+		Data: &country,
+	})
 }
 
 func (cc CountriesController) Delete(c echo.Context) error {

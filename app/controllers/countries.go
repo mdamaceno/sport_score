@@ -1,14 +1,12 @@
 package controllers
 
 import (
-	"errors"
 	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
@@ -29,12 +27,25 @@ func (cc CountriesController) Create(c echo.Context) error {
 	countryParams := new(CountryParams)
 
 	if err := c.Bind(countryParams); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Message:       "Invalid request body",
+				Name:          http.StatusText(http.StatusUnprocessableEntity),
+			},
+		})
 	}
 
 	if err := validate.Struct(countryParams); err != nil {
-        mapErrors := helpers.MapValidationErrors(err)
-        return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{"errors": mapErrors})
+		mapErrors := helpers.MapValidationErrors(err)
+		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Data:          mapErrors,
+				Message:       "Invalid request body",
+				Name:          http.StatusText(http.StatusUnprocessableEntity),
+			},
+		})
 	}
 
 	uuid := uuid.New()
@@ -46,20 +57,28 @@ func (cc CountriesController) Create(c echo.Context) error {
 	}
 
 	if err := cc.DB.Create(&country).Error; err != nil {
-		var pgErr *pgconn.PgError
-
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return c.JSON(http.StatusConflict, map[string]string{"error": "Country already exists"})
+		if helpers.PGConflictError(err) != nil {
+			return c.JSON(http.StatusConflict, map[string]helpers.Error{
+				"error": {
+					OriginalError: err,
+					Message:       country.Slug + " already exists",
+					Name:          http.StatusText(http.StatusConflict),
+				},
+			})
 		}
 
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
+		return c.JSON(http.StatusInternalServerError, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Message:       "Something went wrong",
+				Name:          http.StatusText(http.StatusInternalServerError),
+			},
+		})
 	}
 
 	log.Println("Country created successfully with id: " + uuid.String())
 
-	c.JSON(http.StatusCreated, &country)
-
-	return nil
+	return c.JSON(http.StatusCreated, &country)
 }
 
 func (cc CountriesController) Show(c echo.Context) error {
@@ -67,60 +86,95 @@ func (cc CountriesController) Show(c echo.Context) error {
 	id := c.Param("id")
 
 	if err := cc.DB.Where("id = ?", id).First(&country).Error; err != nil {
-		return c.JSON(http.StatusNotFound, map[string]string{"error": "Country not found"})
+		return c.JSON(http.StatusNotFound, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Message:       "Country not found",
+				Name:          http.StatusText(http.StatusNotFound),
+			},
+		})
 	}
 
 	return c.JSON(http.StatusOK, &country)
 }
 
 func (cc CountriesController) Index(c echo.Context) error {
-    countries := []models.Country{}
+	countries := []models.Country{}
 
-    cc.DB.Find(&countries)
+	cc.DB.Find(&countries)
 
-    return c.JSON(http.StatusOK, &countries)
+	return c.JSON(http.StatusOK, &countries)
 }
 
 func (cc CountriesController) Update(c echo.Context) error {
-    country := models.Country{}
-    id := c.Param("id")
+	country := models.Country{}
+	id := c.Param("id")
 
-    if err := cc.DB.Where("id = ?", id).First(&country).Error; err != nil {
-        return c.JSON(http.StatusNotFound, map[string]string{"error": "Country not found"})
-    }
+	if err := cc.DB.Where("id = ?", id).First(&country).Error; err != nil {
+		return c.JSON(http.StatusNotFound, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Message:       "Country not found",
+				Name:          http.StatusText(http.StatusNotFound),
+			},
+		})
+	}
 
 	countryParams := new(CountryParams)
 
 	if err := c.Bind(countryParams); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Message:       "Invalid request body",
+				Name:          http.StatusText(http.StatusUnprocessableEntity),
+			},
+		})
 	}
 
 	if err := validate.Struct(countryParams); err != nil {
-        mapErrors := helpers.MapValidationErrors(err)
-        return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{"errors": mapErrors})
+		mapErrors := helpers.MapValidationErrors(err)
+		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Data:          mapErrors,
+				Message:       "Invalid request body",
+				Name:          http.StatusText(http.StatusUnprocessableEntity),
+			},
+		})
 	}
 
-    country.Name = countryParams.Name
-    country.Slug = slug.Make(countryParams.Name)
+	country.Name = countryParams.Name
+	country.Slug = slug.Make(countryParams.Name)
 
-    if err := cc.DB.Save(&country).Error; err != nil {
-        var pgErr *pgconn.PgError
+	if err := cc.DB.Save(&country).Error; err != nil {
+		if helpers.PGConflictError(err) != nil {
+			return c.JSON(http.StatusConflict, map[string]helpers.Error{
+				"error": {
+					OriginalError: err,
+					Message:       country.Slug + " already exists",
+					Name:          http.StatusText(http.StatusConflict),
+				},
+			})
+		}
 
-        if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-            return c.JSON(http.StatusConflict, map[string]string{"error": "Country already exists"})
-        }
+		return c.JSON(http.StatusInternalServerError, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Message:       "Something went wrong",
+				Name:          http.StatusText(http.StatusInternalServerError),
+			},
+		})
+	}
 
-        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
-    }
-
-    return c.JSON(http.StatusAccepted, &country)
+	return c.JSON(http.StatusAccepted, &country)
 }
 
 func (cc CountriesController) Delete(c echo.Context) error {
-    country := models.Country{}
-    id := c.Param("id")
+	country := models.Country{}
+	id := c.Param("id")
 
-    cc.DB.Where("id = ?", id).First(&country).Delete(&country)
+	cc.DB.Where("id = ?", id).First(&country).Delete(&country)
 
-    return c.JSON(http.StatusNoContent, nil)
+	return c.JSON(http.StatusNoContent, nil)
 }

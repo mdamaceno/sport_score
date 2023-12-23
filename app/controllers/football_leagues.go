@@ -34,7 +34,7 @@ func (controller FootballLeaguesController) Create(ctx echo.Context) error {
 		})
 	}
 
-	if err := validate.Struct(footballLeagueParams); err != nil {
+	if err := helpers.Validate.Struct(footballLeagueParams); err != nil {
 		mapErrors := helpers.MapValidationErrors(err)
 		return ctx.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
 			"error": {

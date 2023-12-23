@@ -4,15 +4,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
 	"gorm.io/gorm"
 )
-
-var validate *validator.Validate = validator.New(validator.WithRequiredStructEnabled())
 
 type CountriesController struct {
 	DB *gorm.DB
@@ -35,7 +32,7 @@ func (cc CountriesController) Create(c echo.Context) error {
 		})
 	}
 
-	if err := validate.Struct(countryParams); err != nil {
+	if err := helpers.Validate.Struct(countryParams); err != nil {
 		mapErrors := helpers.MapValidationErrors(err)
 		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
 			"error": {
@@ -134,7 +131,7 @@ func (cc CountriesController) Update(c echo.Context) error {
 		})
 	}
 
-	if err := validate.Struct(countryParams); err != nil {
+	if err := helpers.Validate.Struct(countryParams); err != nil {
 		mapErrors := helpers.MapValidationErrors(err)
 		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
 			"error": {

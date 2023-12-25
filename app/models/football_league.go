@@ -14,5 +14,5 @@ type FootballLeague struct {
 	CreatedAt time.Time `gorm:"not null;" json:"created_at"`
 	UpdatedAt time.Time `gorm:"not null;" json:"updated_at"`
 
-	Country Country
+	Country Country `json:"-"`
 }

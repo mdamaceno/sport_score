@@ -10,6 +10,7 @@ import (
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
 	"github.com/mdmaceno/sport_score/app/params"
+	"github.com/mdmaceno/sport_score/app/views"
 	"gorm.io/gorm"
 )
 
@@ -82,7 +83,7 @@ func (controller FootballLeaguesController) Create(ctx echo.Context) error {
 
 	log.Println("FootballLeague created successfully with id: " + footballLeague.Id.String())
 
-	return ctx.JSON(http.StatusCreated, &footballLeague)
+	return ctx.JSON(http.StatusCreated, views.OneFootballLeague(footballLeague))
 }
 
 func (controller FootballLeaguesController) Index(ctx echo.Context) error {
@@ -91,7 +92,7 @@ func (controller FootballLeaguesController) Index(ctx echo.Context) error {
 	controller.DB.Find(&footballLeagues)
 
 	return ctx.JSON(http.StatusOK, helpers.SuccessResponse{
-		Data: &footballLeagues,
+		Data: views.ManyFootballLeagues(footballLeagues),
 	})
 }
 
@@ -108,7 +109,7 @@ func (controller FootballLeaguesController) Show(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, &footballLeague)
+	return ctx.JSON(http.StatusOK, views.OneFootballLeague(footballLeague))
 }
 
 func (controller FootballLeaguesController) Update(ctx echo.Context) error {
@@ -201,7 +202,7 @@ func (controller FootballLeaguesController) Update(ctx echo.Context) error {
 
 	log.Println("FootballLeague updated successfully with id: " + footballLeague.Id.String())
 
-	return ctx.JSON(http.StatusOK, &footballLeague)
+	return ctx.JSON(http.StatusOK, views.OneFootballLeague(footballLeague))
 }
 
 func (controller FootballLeaguesController) Delete(ctx echo.Context) error {

@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
+	"github.com/mdmaceno/sport_score/app/views"
 	"gorm.io/gorm"
 )
 
@@ -72,7 +73,7 @@ func (cc CountriesController) Create(c echo.Context) error {
 	log.Println("Country created successfully with id: " + country.Id.String())
 
 	return c.JSON(http.StatusCreated, helpers.SuccessResponse{
-		Data: &country,
+		Data: views.OneCountry(country),
 	})
 }
 
@@ -91,7 +92,7 @@ func (cc CountriesController) Show(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helpers.SuccessResponse{
-		Data: &country,
+		Data: views.OneCountry(country),
 	})
 }
 
@@ -101,7 +102,7 @@ func (cc CountriesController) Index(c echo.Context) error {
 	cc.DB.Find(&countries)
 
 	return c.JSON(http.StatusOK, helpers.SuccessResponse{
-		Data: &countries,
+		Data: views.ManyCountries(countries),
 	})
 }
 
@@ -167,7 +168,7 @@ func (cc CountriesController) Update(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusAccepted, helpers.SuccessResponse{
-		Data: &country,
+		Data: views.OneCountry(country),
 	})
 }
 

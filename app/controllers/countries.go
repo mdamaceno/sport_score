@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mdmaceno/sport_score/app/helpers"
 	"github.com/mdmaceno/sport_score/app/models"
+	"github.com/mdmaceno/sport_score/app/params"
 	"github.com/mdmaceno/sport_score/app/views"
 	"gorm.io/gorm"
 )
@@ -16,12 +17,8 @@ type CountriesController struct {
 	DB *gorm.DB
 }
 
-type CountryParams struct {
-	Name string `json:"name" validate:"required"`
-}
-
 func (cc CountriesController) Create(c echo.Context) error {
-	countryParams := new(CountryParams)
+	countryParams := new(params.CreateCountryParams)
 
 	if err := c.Bind(countryParams); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
@@ -120,7 +117,7 @@ func (cc CountriesController) Update(c echo.Context) error {
 		})
 	}
 
-	countryParams := new(CountryParams)
+	countryParams := new(params.UpdateCountryParams)
 
 	if err := c.Bind(countryParams); err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{

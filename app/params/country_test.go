@@ -61,4 +61,46 @@ func TestCountryParams(t *testing.T) {
 			})
 		})
 	})
+
+	t.Run("UpdateCountryParams", func(t *testing.T) {
+		t.Run("should not return an error", func(t *testing.T) {
+			t.Run("when attributes are valid", func(t *testing.T) {
+				params := UpdateCountryParams{
+					Name: "Brazil",
+				}
+
+				err := helpers.Validate.Struct(params)
+
+				assert.Nil(t, err)
+			})
+		})
+
+		t.Run("should return an error", func(t *testing.T) {
+			t.Run("when name is too short", func(t *testing.T) {
+				params := UpdateCountryParams{
+					Name: "a",
+				}
+
+				err := helpers.Validate.Struct(params)
+				validationErrors := err.(validator.ValidationErrors)
+
+				assert.NotNil(t, err)
+				assert.Equal(t, validationErrors[0].Field(), "Name")
+				assert.Equal(t, validationErrors[0].Tag(), "min")
+			})
+
+			t.Run("when name is too long", func(t *testing.T) {
+				params := UpdateCountryParams{
+					Name: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor.",
+				}
+
+				err := helpers.Validate.Struct(params)
+				validationErrors := err.(validator.ValidationErrors)
+
+				assert.NotNil(t, err)
+				assert.Equal(t, validationErrors[0].Field(), "Name")
+				assert.Equal(t, validationErrors[0].Tag(), "max")
+			})
+		})
+	})
 }

@@ -6,10 +6,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type Country struct {
+type FootballLeague struct {
 	Id        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 	Name      string    `gorm:"type:varchar(255);not null;"`
 	Slug      string    `gorm:"type:varchar(255);not null;unique"`
+	CountryId uuid.UUID `gorm:"type:uuid;not null;"`
 	CreatedAt time.Time `gorm:"not null;"`
 	UpdatedAt time.Time `gorm:"not null;"`
+
+	Country Country
 }

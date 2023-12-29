@@ -6,7 +6,6 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-      target: dev
     hostname: app01
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}

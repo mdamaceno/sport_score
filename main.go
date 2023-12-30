@@ -7,7 +7,8 @@ import (
 
 func main() {
 	e := echo.New()
-	DB := config.InitDB()
+	appConfig := config.InitConfig()
+	DB := config.InitDB(appConfig)
 	routes := config.InitRoutes(e, DB)
 
 	e.Logger.Fatal(routes.Start(":1323"))

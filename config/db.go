@@ -8,12 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDB() *gorm.DB {
-	host := GetEnvVar("DB_HOST").(string)
-	user := GetEnvVar("DB_USER").(string)
-	password := GetEnvVar("DB_PASS").(string)
-	dbname := GetEnvVar("DB_NAME").(string)
-	port := GetEnvVar("DB_PORT").(string)
+func InitDB(appConf *AppConf) *gorm.DB {
+	host := appConf.DB_HOST
+	user := appConf.DB_USER
+	password := appConf.DB_PASS
+	dbname := appConf.DB_NAME
+	port := appConf.DB_PORT
 
 	url := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbname + " port=" + port +
 		" sslmode=disable TimeZone=UTC"
@@ -24,11 +24,11 @@ func InitDB() *gorm.DB {
 		log.Fatal(err)
 	}
 
-    log.Println("Database connection established")
+	log.Println("Database connection established")
 
-    db.RunMigrations(orm)
+	db.RunMigrations(orm)
 
-    log.Println("Database migrations ran successfully")
+	log.Println("Database migrations ran successfully")
 
 	return orm
 }

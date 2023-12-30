@@ -1,8 +1,6 @@
 package config
 
-import (
-	"github.com/spf13/viper"
-)
+import "os"
 
 type AppConf struct {
 	APP_ID  string
@@ -13,23 +11,13 @@ type AppConf struct {
 	DB_PORT string
 }
 
-func InitConfig() *AppConf {
-	viper.SetConfigFile(".env")
-	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
-
-	err := viper.ReadInConfig()
-
-	if err != nil {
-		panic(err)
-	}
-
+func Envs() *AppConf {
 	return &AppConf{
-		APP_ID:  viper.GetString("APP_ID"),
-		DB_HOST: viper.GetString("DB_HOST"),
-		DB_USER: viper.GetString("DB_USER"),
-		DB_PASS: viper.GetString("DB_PASS"),
-		DB_NAME: viper.GetString("DB_NAME"),
-		DB_PORT: viper.GetString("DB_PORT"),
+		APP_ID:  os.Getenv("APP_ID"),
+		DB_HOST: os.Getenv("DB_HOST"),
+		DB_USER: os.Getenv("DB_USER"),
+		DB_PASS: os.Getenv("DB_PASS"),
+		DB_NAME: os.Getenv("DB_NAME"),
+		DB_PORT: os.Getenv("DB_PORT"),
 	}
 }

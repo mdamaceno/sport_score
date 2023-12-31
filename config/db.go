@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/mdmaceno/sport_score/db"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -25,4 +26,15 @@ func InitDB(a *AppConf) *gorm.DB {
 	log.Println("Database migrations ran successfully")
 
 	return orm
+}
+
+func MockDB() *gorm.DB {
+	mockDb, _, _ := sqlmock.New()
+	dialector := postgres.New(postgres.Config{
+		Conn:       mockDb,
+		DriverName: "postgres",
+	})
+	db, _ := gorm.Open(dialector, &gorm.Config{})
+
+	return db
 }

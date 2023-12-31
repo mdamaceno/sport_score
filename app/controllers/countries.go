@@ -104,19 +104,6 @@ func (cc CountriesController) Index(c echo.Context) error {
 }
 
 func (cc CountriesController) Update(c echo.Context) error {
-	country := models.Country{}
-	id := c.Param("id")
-
-	if err := cc.DB.Where("id = ?", id).First(&country).Error; err != nil {
-		return c.JSON(http.StatusNotFound, map[string]helpers.Error{
-			"error": {
-				OriginalError: err,
-				Message:       "Country not found",
-				Name:          http.StatusText(http.StatusNotFound),
-			},
-		})
-	}
-
 	countryParams := new(params.UpdateCountryParams)
 
 	if err := c.Bind(countryParams); err != nil {
@@ -137,6 +124,18 @@ func (cc CountriesController) Update(c echo.Context) error {
 				Data:          mapErrors,
 				Message:       "Invalid request body",
 				Name:          http.StatusText(http.StatusUnprocessableEntity),
+			},
+		})
+	}
+
+	country := models.Country{}
+
+	if err := cc.DB.Where("id = ?", c.Param("id")).First(&country).Error; err != nil {
+		return c.JSON(http.StatusNotFound, map[string]helpers.Error{
+			"error": {
+				OriginalError: err,
+				Message:       "Country not found",
+				Name:          http.StatusText(http.StatusNotFound),
 			},
 		})
 	}

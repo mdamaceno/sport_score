@@ -45,18 +45,6 @@ func (c FootballTeamsController) Create(ctx echo.Context) error {
 
 	country := models.Country{}
 
-	countryId, err := uuid.Parse(footballTeamParams.CountryId)
-
-	if err != nil {
-		return ctx.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
-			"error": {
-				OriginalError: err,
-				Message:       "Invalid country id",
-				Name:          http.StatusText(http.StatusUnprocessableEntity),
-			},
-		})
-	}
-
 	if err := c.DB.Where("id = ?", footballTeamParams.CountryId).First(&country).Error; err != nil {
 		return ctx.JSON(http.StatusNotFound, map[string]helpers.Error{
 			"error": {
@@ -66,6 +54,8 @@ func (c FootballTeamsController) Create(ctx echo.Context) error {
 			},
 		})
 	}
+
+	countryId, _ := uuid.Parse(footballTeamParams.CountryId)
 
 	footballTeam := models.FootballTeam{
 		Id:        uuid.New(),

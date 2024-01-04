@@ -195,7 +195,7 @@ func (controller FootballLeaguesController) Update(ctx echo.Context) error {
 
 	log.Println("FootballLeague updated successfully with id: " + footballLeague.Id.String())
 
-	return ctx.JSON(http.StatusOK, views.OneFootballLeague(footballLeague))
+	return ctx.JSON(http.StatusAccepted, views.OneFootballLeague(footballLeague))
 }
 
 func (controller FootballLeaguesController) Delete(ctx echo.Context) error {

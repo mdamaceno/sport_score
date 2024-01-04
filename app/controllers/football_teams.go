@@ -14,14 +14,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type FootballLeaguesController struct {
+type FootballTeamsController struct {
 	DB *gorm.DB
 }
 
-func (controller FootballLeaguesController) Create(ctx echo.Context) error {
-	footballLeagueParams := new(params.CreateFootballLeagueParams)
+func (c FootballTeamsController) Create(ctx echo.Context) error {
+	footballTeamParams := new(params.CreateFootballTeamParams)
 
-	if err := ctx.Bind(footballLeagueParams); err != nil {
+	if err := ctx.Bind(footballTeamParams); err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
 			"error": {
 				OriginalError: err,
@@ -31,7 +31,7 @@ func (controller FootballLeaguesController) Create(ctx echo.Context) error {
 		})
 	}
 
-	if err := helpers.Validate.Struct(footballLeagueParams); err != nil {
+	if err := helpers.Validate.Struct(footballTeamParams); err != nil {
 		mapErrors := helpers.MapValidationErrors(err)
 		return ctx.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
 			"error": {
@@ -45,7 +45,7 @@ func (controller FootballLeaguesController) Create(ctx echo.Context) error {
 
 	country := models.Country{}
 
-	if err := controller.DB.Where("id = ?", footballLeagueParams.CountryId).First(&country).Error; err != nil {
+	if err := c.DB.Where("id = ?", footballTeamParams.CountryId).First(&country).Error; err != nil {
 		return ctx.JSON(http.StatusNotFound, map[string]helpers.Error{
 			"error": {
 				OriginalError: err,
@@ -55,21 +55,21 @@ func (controller FootballLeaguesController) Create(ctx echo.Context) error {
 		})
 	}
 
-	countryId, _ := uuid.Parse(footballLeagueParams.CountryId)
+	countryId, _ := uuid.Parse(footballTeamParams.CountryId)
 
-	footballLeague := models.FootballLeague{
+	footballTeam := models.FootballTeam{
 		Id:        uuid.New(),
-		Name:      footballLeagueParams.Name,
-		Slug:      slug.Make(footballLeagueParams.Name),
+		Name:      footballTeamParams.Name,
+		Slug:      slug.Make(footballTeamParams.Name),
 		CountryId: countryId,
 	}
 
-	if err := controller.DB.Create(&footballLeague).Error; err != nil {
+	if err := c.DB.Create(&footballTeam).Error; err != nil {
 		if helpers.PGConflictError(err) != nil {
 			return ctx.JSON(http.StatusConflict, map[string]helpers.Error{
 				"error": {
 					OriginalError: err,
-					Message:       footballLeague.Slug + " already exists",
+					Message:       footballTeam.Slug + " already exists",
 					Name:          http.StatusText(http.StatusConflict),
 				},
 			})
@@ -84,41 +84,41 @@ func (controller FootballLeaguesController) Create(ctx echo.Context) error {
 		})
 	}
 
-	log.Println("FootballLeague created successfully with id: " + footballLeague.Id.String())
+	log.Println("FootballTeam created successfully with id: " + footballTeam.Id.String())
 
-	return ctx.JSON(http.StatusCreated, views.OneFootballLeague(footballLeague))
+	return ctx.JSON(http.StatusCreated, views.OneFootballTeam(footballTeam))
 }
 
-func (controller FootballLeaguesController) Index(ctx echo.Context) error {
-	footballLeagues := []models.FootballLeague{}
+func (c FootballTeamsController) Index(ctx echo.Context) error {
+	footballTeams := []models.FootballTeam{}
 
-	controller.DB.Find(&footballLeagues)
+	c.DB.Find(&footballTeams)
 
 	return ctx.JSON(http.StatusOK, helpers.SuccessResponse{
-		Data: views.ManyFootballLeagues(footballLeagues),
+		Data: views.ManyFootballTeams(footballTeams),
 	})
 }
 
-func (controller FootballLeaguesController) Show(ctx echo.Context) error {
-	footballLeague := models.FootballLeague{}
+func (c FootballTeamsController) Show(ctx echo.Context) error {
+	footballTeam := models.FootballTeam{}
 
-	if err := controller.DB.Where("id = ?", ctx.Param("id")).First(&footballLeague).Error; err != nil {
+	if err := c.DB.Where("id = ?", ctx.Param("id")).First(&footballTeam).Error; err != nil {
 		return ctx.JSON(http.StatusNotFound, map[string]helpers.Error{
 			"error": {
 				OriginalError: err,
-				Message:       "FootballLeague not found",
+				Message:       "FootballTeam not found",
 				Name:          http.StatusText(http.StatusNotFound),
 			},
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, views.OneFootballLeague(footballLeague))
+	return ctx.JSON(http.StatusOK, views.OneFootballTeam(footballTeam))
 }
 
-func (controller FootballLeaguesController) Update(ctx echo.Context) error {
-	footballLeagueParams := new(params.UpdateFootballLeagueParams)
+func (controller FootballTeamsController) Update(ctx echo.Context) error {
+	footballTeamParams := new(params.UpdateFootballTeamParams)
 
-	if err := ctx.Bind(footballLeagueParams); err != nil {
+	if err := ctx.Bind(footballTeamParams); err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
 			"error": {
 				OriginalError: err,
@@ -128,7 +128,7 @@ func (controller FootballLeaguesController) Update(ctx echo.Context) error {
 		})
 	}
 
-	if err := helpers.Validate.Struct(footballLeagueParams); err != nil {
+	if err := helpers.Validate.Struct(footballTeamParams); err != nil {
 		mapErrors := helpers.MapValidationErrors(err)
 		return ctx.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
 			"error": {
@@ -140,24 +140,34 @@ func (controller FootballLeaguesController) Update(ctx echo.Context) error {
 		})
 	}
 
-	footballLeague := models.FootballLeague{}
+	footballTeam := models.FootballTeam{}
 
-	if err := controller.DB.Where("id = ?", ctx.Param("id")).First(&footballLeague).Error; err != nil {
+	if err := controller.DB.Where("id = ?", ctx.Param("id")).First(&footballTeam).Error; err != nil {
 		return ctx.JSON(http.StatusNotFound, map[string]helpers.Error{
 			"error": {
 				OriginalError: err,
-				Message:       "Football League not found",
+				Message:       "Football Team not found",
 				Name:          http.StatusText(http.StatusNotFound),
 			},
 		})
 	}
 
-	if footballLeagueParams.CountryId != "" {
-		countryId, _ := uuid.Parse(footballLeagueParams.CountryId)
+	if footballTeamParams.CountryId != "" {
+		countryId, err := uuid.Parse(footballTeamParams.CountryId)
+
+		if err != nil {
+			return ctx.JSON(http.StatusUnprocessableEntity, map[string]helpers.Error{
+				"error": {
+					OriginalError: err,
+					Message:       "Invalid request body",
+					Name:          http.StatusText(http.StatusUnprocessableEntity),
+				},
+			})
+		}
 
 		country := models.Country{}
 
-		if err := controller.DB.Where("id = ?", footballLeagueParams.CountryId).First(&country).Error; err != nil {
+		if err := controller.DB.Where("id = ?", footballTeamParams.CountryId).First(&country).Error; err != nil {
 			return ctx.JSON(http.StatusNotFound, map[string]helpers.Error{
 				"error": {
 					OriginalError: err,
@@ -167,18 +177,18 @@ func (controller FootballLeaguesController) Update(ctx echo.Context) error {
 			})
 		}
 
-		footballLeague.CountryId = countryId
+		footballTeam.CountryId = countryId
 	}
 
-	footballLeague.Name = footballLeagueParams.Name
-	footballLeague.Slug = slug.Make(footballLeagueParams.Name)
+	footballTeam.Name = footballTeamParams.Name
+	footballTeam.Slug = slug.Make(footballTeamParams.Name)
 
-	if err := controller.DB.Save(&footballLeague).Error; err != nil {
+	if err := controller.DB.Save(&footballTeam).Error; err != nil {
 		if helpers.PGConflictError(err) != nil {
 			return ctx.JSON(http.StatusConflict, map[string]helpers.Error{
 				"error": {
 					OriginalError: err,
-					Message:       footballLeague.Slug + " already exists",
+					Message:       footballTeam.Slug + " already exists",
 					Name:          http.StatusText(http.StatusConflict),
 				},
 			})
@@ -193,16 +203,16 @@ func (controller FootballLeaguesController) Update(ctx echo.Context) error {
 		})
 	}
 
-	log.Println("FootballLeague updated successfully with id: " + footballLeague.Id.String())
+	log.Println("FootballTeam updated successfully with id: " + footballTeam.Id.String())
 
-	return ctx.JSON(http.StatusAccepted, views.OneFootballLeague(footballLeague))
+	return ctx.JSON(http.StatusAccepted, views.OneFootballTeam(footballTeam))
 }
 
-func (controller FootballLeaguesController) Delete(ctx echo.Context) error {
-	footballLeague := models.FootballLeague{}
+func (controller FootballTeamsController) Delete(ctx echo.Context) error {
+	footballTeam := models.FootballTeam{}
 	id := ctx.Param("id")
 
-	controller.DB.Where("id = ?", id).First(&footballLeague).Delete(&footballLeague)
+	controller.DB.Where("id = ?", id).First(&footballTeam).Delete(&footballTeam)
 
 	return ctx.JSON(http.StatusNoContent, nil)
 }

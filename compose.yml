@@ -12,14 +12,19 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASS: ${DB_PASS:-postgres}
       DB_NAME: ${DB_NAME}
-      DB_HOST: ${DB_HOST:-postgres}
+      DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
+      DB_TEST_USER: ${DB_TEST_USER:-postgres}
+      DB_TEST_PASS: ${DB_TEST_PASS:-postgres}
+      DB_TEST_NAME: ${DB_TEST_NAME}
+      DB_TEST_HOST: ${DB_TEST_HOST:-dbtest}
+      DB_TEST_PORT: ${DB_TEST_PORT:-5432}
       TZ: ${TZ:-UTC}
     volumes:
       - .:/opt/app/api
     depends_on:
-      - redis
-      - postgres
+      - db
+      - dbtest
 
   app02:
     <<: *app
@@ -43,9 +48,9 @@ services:
     environment:
       TZ: ${TZ:-UTC}
 
-  postgres:
+  db:
     image: postgres:16-alpine
-    container_name: ${APP_ID:-app}-postgres
+    container_name: ${APP_ID:-app}-db
     ports:
       - ${DB_PORT:-5432}:5432
     environment:
@@ -54,7 +59,16 @@ services:
       POSTGRES_DB: ${DB_NAME}
       TZ: ${TZ:-UTC}
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
+
+  dbtest:
+    image: postgres:16-alpine
+    container_name: ${APP_ID:-app}-dbtest
+    environment:
+      POSTGRES_USER: ${DB_TEST_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_TEST_PASS:-postgres}
+      POSTGRES_DB: ${DB_TEST_NAME}
+      TZ: ${TZ:-UTC}
 
 volumes:
-  postgres:
+  db:

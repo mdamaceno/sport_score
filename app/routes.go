@@ -1,4 +1,4 @@
-package config
+package app
 
 import (
 	"github.com/labstack/echo/v4"
@@ -10,6 +10,7 @@ import (
 func InitRoutes(e *echo.Echo, DB *gorm.DB) *echo.Echo {
 	countriesControllers := controllers.CountriesController{DB: DB}
 	footballLeaguesControllers := controllers.FootballLeaguesController{DB: DB}
+	footballTeamsControllers := controllers.FootballTeamsController{DB: DB}
 	apiV1 := e.Group("/api/v1")
 
 	apiV1.Use(middleware.LogIncomingAccess)
@@ -25,6 +26,12 @@ func InitRoutes(e *echo.Echo, DB *gorm.DB) *echo.Echo {
 	apiV1.POST("/football_leagues", footballLeaguesControllers.Create)
 	apiV1.PATCH("/football_leagues/:id", footballLeaguesControllers.Update)
 	apiV1.DELETE("/football_leagues/:id", footballLeaguesControllers.Delete)
+
+	apiV1.GET("/football_teams", footballTeamsControllers.Index)
+	apiV1.GET("/football_teams/:id", footballTeamsControllers.Show)
+	apiV1.POST("/football_teams", footballTeamsControllers.Create)
+	apiV1.PATCH("/football_teams/:id", footballTeamsControllers.Update)
+	apiV1.DELETE("/football_teams/:id", footballTeamsControllers.Delete)
 
 	return e
 }

@@ -5,5 +5,5 @@ type CreateCountryParams struct {
 }
 
 type UpdateCountryParams struct {
-	Name string `json:"name" validate:"min=3,max=100,omitempty"`
+	Name string `json:"name" validate:"required,min=3,max=100,omitempty"`
 }

@@ -6,5 +6,9 @@ import (
 )
 
 func RunMigrations(db *gorm.DB) {
-	db.AutoMigrate(&models.Country{}, &models.FootballLeague{})
+	db.AutoMigrate(
+		&models.Country{},
+		&models.FootballLeague{},
+		&models.FootballTeam{},
+	)
 }

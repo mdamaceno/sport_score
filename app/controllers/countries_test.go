@@ -2,45 +2,51 @@ package controllers
 
 import (
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
-	"github.com/labstack/echo/v4"
+	"github.com/google/uuid"
+	"github.com/mdmaceno/sport_score/app/models"
 	"github.com/mdmaceno/sport_score/config"
+	"github.com/mdmaceno/sport_score/tests"
 	"github.com/stretchr/testify/assert"
 )
 
-var countryJSON = struct {
-	allValid string
-	noName   string
-}{
-	allValid: `{ "name": "Brazil" }`,
-	noName:   `{ "name": "" }`,
-}
+func TestCountriesController(t *testing.T) {
+	DB := *tests.InitDB(config.Envs())
+	setupOpts := &tests.SetupOptions{DB: &DB}
 
-func TestCountrysController(t *testing.T) {
+	country := models.Country{
+		Id:   uuid.New(),
+		Name: "Brazil",
+	}
+
 	t.Run("Create", func(t *testing.T) {
 		t.Run("Should create a new country", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodPost, "/countries", strings.NewReader(countryJSON.allValid))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &CountriesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Create(ctx))
+			body := `{ "name": "Brazil" }`
+
+			ctx, rec := tests.PrepareRequest(http.MethodPost, body)
+
+			ctx.SetPath("/countries")
+			c := &CountriesController{DB: &DB}
+			c.Create(ctx)
+
+			assert.Equal(t, http.StatusCreated, rec.Code)
 		})
 
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Run("When name is empty", func(t *testing.T) {
-				e := echo.New()
-				req := httptest.NewRequest(http.MethodPost, "/countries", strings.NewReader(countryJSON.noName))
-				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-				rec := httptest.NewRecorder()
-				ctx := e.NewContext(req, rec)
-				c := &CountriesController{DB: config.MockDB()}
+				teardown := tests.SetupTest(t, setupOpts)
+				defer teardown(t)
 
+				body := `{ "name": "" }`
+
+				ctx, rec := tests.PrepareRequest(http.MethodPost, body)
+
+				ctx.SetPath("/countries")
+				c := &CountriesController{DB: &DB}
 				c.Create(ctx)
 
 				assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
@@ -51,57 +57,72 @@ func TestCountrysController(t *testing.T) {
 
 	t.Run("Index", func(t *testing.T) {
 		t.Run("Should return all countries", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodGet, "/countries", nil)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &CountriesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Index(ctx))
+			ctx, rec := tests.PrepareRequest(http.MethodGet, "")
+
+			ctx.SetPath("/countries")
+			c := &CountriesController{DB: &DB}
+			c.Index(ctx)
+
+			assert.Equal(t, http.StatusOK, rec.Code)
 		})
 	})
 
 	t.Run("Show", func(t *testing.T) {
-		t.Run("Should return a countries", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodGet, "/countries/ab005904-a7eb-11ee-ac0c-734d962dd9d1", nil)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &CountriesController{DB: config.MockDB()}
+		t.Run("Should return a country", func(t *testing.T) {
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Show(ctx))
+			DB.Create(&country)
+
+			ctx, rec := tests.PrepareRequest(http.MethodGet, "")
+
+			ctx.SetPath("/countries/:id")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(country.Id.String())
+
+			c := &CountriesController{DB: &DB}
+			c.Show(ctx)
+
+			assert.Equal(t, http.StatusOK, rec.Code)
 		})
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		t.Run("Should update a countries", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(
-				http.MethodPatch,
-				"/countries/ab005904-a7eb-11ee-ac0c-734d962dd9d1",
-				strings.NewReader(countryJSON.allValid),
-			)
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &CountriesController{DB: config.MockDB()}
+		t.Run("Should update a country", func(t *testing.T) {
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Update(ctx))
+			DB.Create(&country)
+
+			body := `{ "name": "Argentina" }`
+
+			ctx, rec := tests.PrepareRequest(http.MethodPatch, body)
+
+			ctx.SetPath("/countries/:id")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(country.Id.String())
+
+			c := &CountriesController{DB: &DB}
+			c.Update(ctx)
+
+			assert.Equal(t, http.StatusAccepted, rec.Code)
+			assert.Contains(t, rec.Body.String(), `"name":"Argentina"`)
 		})
 
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Run("When name is empty", func(t *testing.T) {
-				e := echo.New()
-				req := httptest.NewRequest(
-					http.MethodPatch,
-					"/countries/ab005904-a7eb-11ee-ac0c-734d962dd9d1",
-					strings.NewReader(countryJSON.noName),
-				)
-				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-				rec := httptest.NewRecorder()
-				ctx := e.NewContext(req, rec)
-				c := &CountriesController{DB: config.MockDB()}
+				body := `{ "name": "" }`
 
+				ctx, rec := tests.PrepareRequest(http.MethodPatch, body)
+
+				ctx.SetPath("/countries/:id")
+				ctx.SetParamNames("id")
+				ctx.SetParamValues(country.Id.String())
+
+				c := &CountriesController{DB: &DB}
 				c.Update(ctx)
 
 				assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
@@ -112,13 +133,20 @@ func TestCountrysController(t *testing.T) {
 
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("Should delete a countries", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodDelete, "/countries/ab005904-a7eb-11ee-ac0c-734d962dd9d1", nil)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &CountriesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Delete(ctx))
+			DB.Create(&country)
+
+			ctx, rec := tests.PrepareRequest(http.MethodDelete, "")
+
+			ctx.SetPath("/countries/:id")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(country.Id.String())
+			c := &CountriesController{DB: &DB}
+			c.Delete(ctx)
+
+			assert.Equal(t, http.StatusNoContent, rec.Code)
 		})
 	})
 }

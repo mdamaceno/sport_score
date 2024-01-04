@@ -2,48 +2,61 @@ package controllers
 
 import (
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
-	"github.com/labstack/echo/v4"
+	"github.com/google/uuid"
+	"github.com/mdmaceno/sport_score/app/models"
 	"github.com/mdmaceno/sport_score/config"
+	"github.com/mdmaceno/sport_score/tests"
 	"github.com/stretchr/testify/assert"
 )
 
-var footballLeagueJSON = struct {
-	allValid         string
-	noName           string
-	noCountryId      string
-	invalidCountryId string
-}{
-	allValid:         `{ "name": "Flamengo", "country_id": "ab005904-a7eb-11ee-ac0c-734d962dd9d1" }`,
-	noName:           `{ "name": "", "country_id": "ab005904-a7eb-11ee-ac0c-734d962dd9d1" }`,
-	noCountryId:      `{ "name": "Flamengo", "country_id": "" }`,
-	invalidCountryId: `{ "name": "Flamengo", "country_id": "ab005904-a7eb-11ee-ac0c-734d962dd9d1" }`,
-}
-
 func TestFootballLeaguesController(t *testing.T) {
+	DB := *tests.InitDB(config.Envs())
+	setupOpts := &tests.SetupOptions{DB: &DB}
+
+	country := models.Country{
+		Id:   uuid.New(),
+		Name: "Brazil",
+	}
+
+	footballLeague := models.FootballLeague{
+		Id:        uuid.New(),
+		Name:      "Brasileirão",
+		CountryId: country.Id,
+	}
+
 	t.Run("Create", func(t *testing.T) {
 		t.Run("Should create a new football league", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodPost, "/football_leagues", strings.NewReader(footballLeagueJSON.allValid))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &FootballLeaguesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Create(ctx))
+			DB.Create(&country)
+
+			body := `{ "name": "Flamengo", "country_id": "` + country.Id.String() + `" }`
+
+			ctx, rec := tests.PrepareRequest(http.MethodPost, body)
+
+			ctx.SetPath("/football_leagues")
+			c := &FootballLeaguesController{DB: &DB}
+			c.Create(ctx)
+
+			assert.Equal(t, http.StatusCreated, rec.Code)
 		})
 
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Run("When name is empty", func(t *testing.T) {
-				e := echo.New()
-				req := httptest.NewRequest(http.MethodPost, "/football_leagues", strings.NewReader(footballLeagueJSON.noName))
-				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-				rec := httptest.NewRecorder()
-				ctx := e.NewContext(req, rec)
-				c := &FootballLeaguesController{DB: config.MockDB()}
+				teardown := tests.SetupTest(t, setupOpts)
+				defer teardown(t)
+
+				DB.Create(&country)
+
+				body := `{ "name": "", "country_id": "` + country.Id.String() + `" }`
+
+				ctx, rec := tests.PrepareRequest(http.MethodPost, body)
+
+				ctx.SetPath("/football_leagues")
+				c := &FootballLeaguesController{DB: &DB}
 
 				c.Create(ctx)
 
@@ -52,12 +65,17 @@ func TestFootballLeaguesController(t *testing.T) {
 			})
 
 			t.Run("When country_id is empty", func(t *testing.T) {
-				e := echo.New()
-				req := httptest.NewRequest(http.MethodPost, "/football_leagues", strings.NewReader(footballLeagueJSON.noCountryId))
-				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-				rec := httptest.NewRecorder()
-				ctx := e.NewContext(req, rec)
-				c := &FootballLeaguesController{DB: config.MockDB()}
+				teardown := tests.SetupTest(t, setupOpts)
+				defer teardown(t)
+
+				DB.Create(&country)
+
+				body := `{ "name": "Brasileirão Série A", "country_id": "" }`
+
+				ctx, rec := tests.PrepareRequest(http.MethodPost, body)
+
+				ctx.SetPath("/football_leagues")
+				c := &FootballLeaguesController{DB: &DB}
 
 				c.Create(ctx)
 
@@ -69,56 +87,78 @@ func TestFootballLeaguesController(t *testing.T) {
 
 	t.Run("Index", func(t *testing.T) {
 		t.Run("Should return all football leagues", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodGet, "/football_leagues", nil)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &FootballLeaguesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
+
+			DB.Create(&country)
+			DB.Create(&footballLeague)
+
+			ctx, rec := tests.PrepareRequest(http.MethodGet, "")
+
+			ctx.SetPath("/football_leagues")
+			c := &FootballLeaguesController{DB: &DB}
 
 			assert.NoError(t, c.Index(ctx))
+			assert.Equal(t, http.StatusOK, rec.Code)
 		})
 	})
 
 	t.Run("Show", func(t *testing.T) {
 		t.Run("Should return a football league", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodGet, "/football_leagues/ab005904-a7eb-11ee-ac0c-734d962dd9d1", nil)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &FootballLeaguesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Show(ctx))
+			DB.Create(&country)
+			DB.Create(&footballLeague)
+
+			ctx, rec := tests.PrepareRequest(http.MethodGet, "")
+
+			ctx.SetPath("/football_leagues/:id")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(footballLeague.Id.String())
+			c := &FootballLeaguesController{DB: &DB}
+			c.Show(ctx)
+
+			assert.Equal(t, http.StatusOK, rec.Code)
 		})
 	})
 
 	t.Run("Update", func(t *testing.T) {
 		t.Run("Should update a football league", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(
-				http.MethodPatch,
-				"/football_leagues/ab005904-a7eb-11ee-ac0c-734d962dd9d1",
-				strings.NewReader(footballLeagueJSON.allValid),
-			)
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &FootballLeaguesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Update(ctx))
+			DB.Create(&country)
+			DB.Create(&footballLeague)
+
+			body := `{ "name": "Brasileirão Série A", "country_id": "` + country.Id.String() + `" }`
+
+			ctx, rec := tests.PrepareRequest(http.MethodPatch, body)
+
+			ctx.SetPath("/football_leagues/:id")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(footballLeague.Id.String())
+			c := &FootballLeaguesController{DB: &DB}
+			c.Update(ctx)
+
+			assert.Equal(t, http.StatusAccepted, rec.Code)
 		})
 
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Run("When name is empty", func(t *testing.T) {
-				e := echo.New()
-				req := httptest.NewRequest(
-					http.MethodPatch,
-					"/football_leagues/ab005904-a7eb-11ee-ac0c-734d962dd9d1",
-					strings.NewReader(footballLeagueJSON.noName),
-				)
-				req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-				rec := httptest.NewRecorder()
-				ctx := e.NewContext(req, rec)
-				c := &FootballLeaguesController{DB: config.MockDB()}
+				teardown := tests.SetupTest(t, setupOpts)
+				defer teardown(t)
+
+				DB.Create(&country)
+				DB.Create(&footballLeague)
+
+				body := `{ "name": "", "country_id": "` + country.Id.String() + `" }`
+
+				ctx, rec := tests.PrepareRequest(http.MethodPatch, body)
+
+				ctx.SetPath("/football_leagues/:id")
+				ctx.SetParamNames("id")
+				c := &FootballLeaguesController{DB: &DB}
 
 				c.Update(ctx)
 
@@ -130,13 +170,21 @@ func TestFootballLeaguesController(t *testing.T) {
 
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("Should delete a football league", func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodDelete, "/football_leagues/ab005904-a7eb-11ee-ac0c-734d962dd9d1", nil)
-			rec := httptest.NewRecorder()
-			ctx := e.NewContext(req, rec)
-			c := &FootballLeaguesController{DB: config.MockDB()}
+			teardown := tests.SetupTest(t, setupOpts)
+			defer teardown(t)
 
-			assert.NoError(t, c.Delete(ctx))
+			DB.Create(&country)
+			DB.Create(&footballLeague)
+
+			ctx, rec := tests.PrepareRequest(http.MethodDelete, "")
+
+			ctx.SetPath("/football_leagues/:id")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(footballLeague.Id.String())
+			c := &FootballLeaguesController{DB: &DB}
+			c.Delete(ctx)
+
+			assert.Equal(t, http.StatusNoContent, rec.Code)
 		})
 	})
 }

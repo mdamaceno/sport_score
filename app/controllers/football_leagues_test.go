@@ -38,7 +38,7 @@ func TestFootballLeaguesController(t *testing.T) {
 			ctx, rec := tests.PrepareRequest(http.MethodPost, body)
 
 			ctx.SetPath("/football_leagues")
-			c := &FootballLeaguesController{DB: &DB}
+			c := FootballLeaguesController{DB: &DB}
 			c.Create(ctx)
 
 			assert.Equal(t, http.StatusCreated, rec.Code)
@@ -56,7 +56,7 @@ func TestFootballLeaguesController(t *testing.T) {
 				ctx, rec := tests.PrepareRequest(http.MethodPost, body)
 
 				ctx.SetPath("/football_leagues")
-				c := &FootballLeaguesController{DB: &DB}
+				c := FootballLeaguesController{DB: &DB}
 
 				c.Create(ctx)
 
@@ -75,7 +75,7 @@ func TestFootballLeaguesController(t *testing.T) {
 				ctx, rec := tests.PrepareRequest(http.MethodPost, body)
 
 				ctx.SetPath("/football_leagues")
-				c := &FootballLeaguesController{DB: &DB}
+				c := FootballLeaguesController{DB: &DB}
 
 				c.Create(ctx)
 
@@ -96,7 +96,7 @@ func TestFootballLeaguesController(t *testing.T) {
 			ctx, rec := tests.PrepareRequest(http.MethodGet, "")
 
 			ctx.SetPath("/football_leagues")
-			c := &FootballLeaguesController{DB: &DB}
+			c := FootballLeaguesController{DB: &DB}
 
 			assert.NoError(t, c.Index(ctx))
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -116,7 +116,7 @@ func TestFootballLeaguesController(t *testing.T) {
 			ctx.SetPath("/football_leagues/:id")
 			ctx.SetParamNames("id")
 			ctx.SetParamValues(footballLeague.Id.String())
-			c := &FootballLeaguesController{DB: &DB}
+			c := FootballLeaguesController{DB: &DB}
 			c.Show(ctx)
 
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -138,7 +138,7 @@ func TestFootballLeaguesController(t *testing.T) {
 			ctx.SetPath("/football_leagues/:id")
 			ctx.SetParamNames("id")
 			ctx.SetParamValues(footballLeague.Id.String())
-			c := &FootballLeaguesController{DB: &DB}
+			c := FootballLeaguesController{DB: &DB}
 			c.Update(ctx)
 
 			assert.Equal(t, http.StatusAccepted, rec.Code)
@@ -158,7 +158,7 @@ func TestFootballLeaguesController(t *testing.T) {
 
 				ctx.SetPath("/football_leagues/:id")
 				ctx.SetParamNames("id")
-				c := &FootballLeaguesController{DB: &DB}
+				c := FootballLeaguesController{DB: &DB}
 
 				c.Update(ctx)
 
@@ -181,7 +181,7 @@ func TestFootballLeaguesController(t *testing.T) {
 			ctx.SetPath("/football_leagues/:id")
 			ctx.SetParamNames("id")
 			ctx.SetParamValues(footballLeague.Id.String())
-			c := &FootballLeaguesController{DB: &DB}
+			c := FootballLeaguesController{DB: &DB}
 			c.Delete(ctx)
 
 			assert.Equal(t, http.StatusNoContent, rec.Code)

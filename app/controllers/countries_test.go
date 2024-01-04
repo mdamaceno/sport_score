@@ -30,7 +30,7 @@ func TestCountriesController(t *testing.T) {
 			ctx, rec := tests.PrepareRequest(http.MethodPost, body)
 
 			ctx.SetPath("/countries")
-			c := &CountriesController{DB: &DB}
+			c := CountriesController{DB: &DB}
 			c.Create(ctx)
 
 			assert.Equal(t, http.StatusCreated, rec.Code)
@@ -46,7 +46,7 @@ func TestCountriesController(t *testing.T) {
 				ctx, rec := tests.PrepareRequest(http.MethodPost, body)
 
 				ctx.SetPath("/countries")
-				c := &CountriesController{DB: &DB}
+				c := CountriesController{DB: &DB}
 				c.Create(ctx)
 
 				assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
@@ -63,7 +63,7 @@ func TestCountriesController(t *testing.T) {
 			ctx, rec := tests.PrepareRequest(http.MethodGet, "")
 
 			ctx.SetPath("/countries")
-			c := &CountriesController{DB: &DB}
+			c := CountriesController{DB: &DB}
 			c.Index(ctx)
 
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -83,7 +83,7 @@ func TestCountriesController(t *testing.T) {
 			ctx.SetParamNames("id")
 			ctx.SetParamValues(country.Id.String())
 
-			c := &CountriesController{DB: &DB}
+			c := CountriesController{DB: &DB}
 			c.Show(ctx)
 
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -105,7 +105,7 @@ func TestCountriesController(t *testing.T) {
 			ctx.SetParamNames("id")
 			ctx.SetParamValues(country.Id.String())
 
-			c := &CountriesController{DB: &DB}
+			c := CountriesController{DB: &DB}
 			c.Update(ctx)
 
 			assert.Equal(t, http.StatusAccepted, rec.Code)
@@ -122,7 +122,7 @@ func TestCountriesController(t *testing.T) {
 				ctx.SetParamNames("id")
 				ctx.SetParamValues(country.Id.String())
 
-				c := &CountriesController{DB: &DB}
+				c := CountriesController{DB: &DB}
 				c.Update(ctx)
 
 				assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
@@ -143,7 +143,7 @@ func TestCountriesController(t *testing.T) {
 			ctx.SetPath("/countries/:id")
 			ctx.SetParamNames("id")
 			ctx.SetParamValues(country.Id.String())
-			c := &CountriesController{DB: &DB}
+			c := CountriesController{DB: &DB}
 			c.Delete(ctx)
 
 			assert.Equal(t, http.StatusNoContent, rec.Code)

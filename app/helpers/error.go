@@ -6,13 +6,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type Error struct {
-	OriginalError error       `json:"-"`
-	Data          interface{} `json:"data"`
-	Name          string      `json:"name"`
-	Message       string      `json:"message"`
-}
-
 func PGConflictError(err error) error {
 	var pgErr *pgconn.PgError
 
